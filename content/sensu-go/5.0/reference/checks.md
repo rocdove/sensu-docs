@@ -165,8 +165,20 @@ environment.
 * A unique string used to name/identify the check
 * Cannot contain special characters or spaces
 * Validated with Go regex [`\A[\w\.\-]+\z`](https://regex101.com/r/zo9mQU/2)
-
+  
 ### Check attributes
+
+|metadata     |      |
+-------------|------
+description  | Collection of metadata about the check, including the `name` and `namespace` as well as custom `labels` and `annotations`. See the [metadata attributes reference][] for details.
+required     | false
+type         | Hash
+example      | {{< highlight shell >}}"metadata": {
+  "name": "collect-metrics",
+  "namespace": "default",
+  "annotations": [],
+  "labels": []
+}{{< /highlight >}}
 
 |command     |      |
 -------------|------
@@ -289,11 +301,11 @@ required     | false
 type         | Boolean
 example      | {{< highlight shell >}}"round_robin": false{{< /highlight >}}
 
-|extended_attributes|      |
+|labels|      |
 -------------|------
 description  | Custom attributes to include with the event data, which can be queried like regular attributes.
 required     | false
-type         | Serialized JSON object
+type         | Array
 example      | {{< highlight shell >}}"{\"team\":\"ops\"}"{{< /highlight >}}
 
 |organization|      |
@@ -367,6 +379,71 @@ required     | false
 type         | Integer
 default      | 90
 example      | {{< highlight shell >}}"splay_coverage": 65{{< /highlight >}}
+
+### Metadata attributes
+
+|metadata     |      |
+-------------|------
+description  | Collection of metadata about the check, including the `name` and `namespace` as well as custom `labels` and `annotations`. See the [metadata attributes reference][] for details.
+required     | false
+type         | Hash
+example      | {{< highlight shell >}}"metadata": {
+  "name": "collect-metrics",
+  "namespace": "default",
+  "annotations": [],
+  "labels": []
+}{{< /highlight >}}
+
+|name     |      |
+-------------|------
+description  | Collection of metadata about the check, including the `name` and `namespace` as well as custom `labels` and `annotations`. See the [metadata attributes reference][] for details.
+required     | false
+type         | Hash
+example      | {{< highlight shell >}}"metadata": {
+  "name": "collect-metrics",
+  "namespace": "default",
+  "annotations": [],
+  "labels": []
+}{{< /highlight >}}
+
+|metadata     |      |
+-------------|------
+description  | Collection of metadata about the check, including the `name` and `namespace` as well as custom `labels` and `annotations`. See the [metadata attributes reference][] for details.
+required     | false
+type         | Hash
+example      | {{< highlight shell >}}"metadata": {
+  "name": "collect-metrics",
+  "namespace": "default",
+  "annotations": [],
+  "labels": []
+}{{< /highlight >}}
+
+|metadata     |      |
+-------------|------
+description  | Collection of metadata about the check, including the `name` and `namespace` as well as custom `labels` and `annotations`. See the [metadata attributes reference][] for details.
+required     | false
+type         | Hash
+example      | {{< highlight shell >}}"metadata": {
+  "name": "collect-metrics",
+  "namespace": "default",
+  "annotations": [],
+  "labels": []
+}{{< /highlight >}}
+
+|metadata     |      |
+-------------|------
+description  | Collection of metadata about the check, including the `name` and `namespace` as well as custom `labels` and `annotations`. See the [metadata attributes reference][] for details.
+required     | false
+type         | Hash
+example      | {{< highlight shell >}}"metadata": {
+  "name": "collect-metrics",
+  "namespace": "default",
+  "annotations": [],
+  "labels": []
+}{{< /highlight >}}
+
+
+
 
 ### Subdue attributes
 
