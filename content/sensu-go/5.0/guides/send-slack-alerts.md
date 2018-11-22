@@ -29,7 +29,7 @@ great place to start.
 
 ### Installing the handler command
 
-The first step is to create an executable script named `slack-handler`, which is
+The first step is to create an executable script named `slack_handler`, which is
 responsible for sending the event data to Slack. You can download a release of
 this handler from [GitHub][11], then extract it by running:
 
@@ -43,7 +43,7 @@ Sensu backend [`$PATH` directories][5], more precisely `/usr/local/bin`.
 
 {{< highlight shell >}}
 # From the local path of the slack-handler repository
-go build -o /usr/local/bin/slack-handler main.go
+go build -o /usr/local/bin/slack_handler main.go
 {{< /highlight >}}
 
 ### Getting a Slack webhook
@@ -65,7 +65,7 @@ so zero status events are also discarded.
 {{< highlight shell >}}
 sensuctl handler create slack \
 --type pipe \
---command 'slack-handler \
+--command 'slack_handler \
   --webhook-url https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX \
   --channel monitoring' \
 --filters is_incident,not_silenced
