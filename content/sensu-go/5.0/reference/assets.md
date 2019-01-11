@@ -15,20 +15,53 @@ menu:
 - [Examples](#examples)
 
 ## What is an asset?
-An asset is an executable that a check, handler, or mutator can specify as a
-dependency. Assets must be a tar archive (optionally gzipped) with scripts or
-executables within a bin folder. At runtime, the backend or agent installs
-required assets using the specified URL. Assets let you manage runtime
-dependencies without using configuration management tools.
+Assets help you manage and reuse dependencies for Sensu checks, filters, mutators, and handlers.
+An asset is an HTTP-accessible archive containing one or more Sensu Plugin executables.
+At runtime, Sensu installs required assets using the specified URL.
+
+[Diagram]
+
+### Asset types
+
+Sensu assets can provide dependencies for Sensu checks, filters, mutators, and handlers.
+
+| Asset type | Description
+| --- | --- |
+|Service check assets | Assets used by Sensu agents to perform service checks. Executables included with service check assets must follow the Sensu Plugin specification.
+|Metric check assets | Assets used by Sensu agents to collect metrics in [Sensu metric format] or one of Sensu's supported metric formats. Executables included with metric check assets must follow the Sensu Plugin specification.
+|Event filter assets | Assets used by Sensu backends to execute event filters. Filter assets can provide powerful filtering libraries that extend the capabilities of Sensu filters. Filter assets must provide filtering libraries within a lib folder.
+|Event mutator assets | Assets used by Sensu backends to execute event mutators. Executables included with mutator assets must follow the Sensu Plugin specification.
+|Event handler assets | Assets used by Sensu backends to execute event handlers. Executables included with handler assets must be must follow the Sensu Plugin specification.
+
+## Asset format specification
+Sensu expects an asset to be a tar archive (optionally gzipped) containing one or more executables within a bin folder.
+
+Sensu injects the following asset components into the execution context:
+
+- `{PATH_TO_ASSET}/bin` is injected into the `PATH` environment variable.
+- `{PATH_TO_ASSET}/lib` is injected into the `LD_LIBRARY_PATH` environment
+  variable.
+- `{PATH_TO_ASSET}/include` is injected into the `CPATH` environment variable.
+
+### Example structure
+{{< highlight shell >}}
+sensu-example-handler_1.0.0_linux_amd64
+├── CHANGELOG.md
+├── LICENSE
+├── README.md
+└── bin
+└── lib
+└── include
+{{< /highlight >}}
 
 ## How do assets work?
-Assets can be executed by the backend (for handler and mutator assets), or
-by the agent (for check assets). At runtime, the entity sequentially fetches
+Assets can be executed by the backend (for filter, mutator, and handler assets) or
+by the agent (for check assets). At runtime, Sensu sequentially fetches
 assets and stores them in its local cache. Asset dependencies are then
 injected into the `PATH` so they are available when the command is executed.
-Subsequent check, handler, or mutator executions look for the asset in local
-cache and ensure the contents match the checksum. An entity's local cache can
-be set using the `--cache-dir` flag.
+Subsequent check, filter, mutator, or handler executions look for the asset in local
+cache and ensure the contents match the checksum. Sensu's local cache can
+be set using the `--cache-dir` flag in the backend or agent configuration.
 
 ### Default cache directory
 
@@ -38,19 +71,81 @@ default | `/var/cache/sensu/sensu-backend`            | `/var/cache/sensu/sensu-
 Windows | `C:\\ProgramData\sensu\cache\sensu-backend` | `C:\\ProgramData\sensu\cache\sensu-agent`
 
 If the requested asset is not in the local cache, it is downloaded from the asset
-URL. The Sensu backend does not currently provide any storage for assets; they
+URL. Sensu does not currently provide any storage for assets; they
 are expected to be retrieved over HTTP or HTTPS.
 
-The agent expects that an asset is a `TAR` archive that may optionally be
-GZip'd. Any scripts or executables should be within a `bin/` folder within in
-the archive.
+## Using assets in Sensu
 
-The following are injected into the execution context:
+You can use sensuctl or the Sensu API to add an asset to Sensu.
+First create an asset definition that includes the asset name, url, sha512 checksum, and any applicable platform filters.
+The following example shows an asset definition for a `sensu-example-handler` plugin for Linux `amd64`.
+See the [asset definition specification][] for more information about asset attributes.
 
-- `{PATH_TO_ASSET}/bin` is injected into the `PATH` environment variable.
-- `{PATH_TO_ASSET}/lib` is injected into the `LD_LIBRARY_PATH` environment
-  variable.
-- `{PATH_TO_ASSET}/include` is injected into the `CPATH` environment variable.
+{{< highlight shell >}}
+sensu-example-handler-1.0.0-linux-amd64.json
+{
+  "type": "Asset",
+  "api_version": "core/v2",
+  "metadata": {
+    "name": "sensu-example-handler",
+    "namespace": "default",
+    "labels": {},
+    "annotations": {}
+  },
+  "spec": {
+    "url": "https://github.com/sensu/sensu-example-handler/releases/download/1.0.0/sensu-example-handler_1.0.0_linux_amd64.tar.gz",
+    "sha512": "5facfb0706e5e36edc5d13...",
+    "filters": [
+      "entity.system.os == linux",
+      "entity.system.arch == amd64"
+    ]
+  }
+}
+{{< /highlight >}}
+
+Then use sensuctl to create an asset.
+
+{{< highlight shell >}}
+sensuctl create --file sensu-sensu-pagerduty-handler-1.0.1-linux-amd64.json
+{{< /highlight >}}
+
+_PRO TIP: You can create multiple resources with a single `sensuctl create` command by including multiple resource definitions in the same file. See the [sensuctl reference][] for formatting requirements._
+
+You can see your available assets using `sensuctl asset`.
+
+{{< highlight shell >}}
+# Show available assets
+sensuctl asset list
+
+# Show details for a specific asset
+sensuctl asset info sensu-example-handler
+{{< /highlight >}}
+
+_NOTE: Assets are namespaced resources in Sensu: they must belong to a single namespace and can only be managed by users with the correct permissions for that namespace. See the [RBAC reference][] for more information._
+
+Now that your assets are ready, you can use them to build monitoring workflows using checks, filters, mutators, and handlers.
+
+### Using assets to create events
+
+Service check and metric check assets are downloaded by the agent at runtime and made available when executing the check.
+To use a check asset in Sensu, first create an asset definition and add it to Sensu, then create a check definition that depends on the asset.
+The Sensu backend...
+
+[diagram]
+
+For example...
+
+### Using assets to filter events
+
+### Using assets to mutate event data
+
+### Using assets to handle events
+
+### Versioning
+
+## Creating assets
+
+Assets work best as statically compiled, dependency-free executables.
 
 ## Assets specification
 
